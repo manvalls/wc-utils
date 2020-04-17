@@ -119,8 +119,9 @@ export function getFormElementValues(formElement, { prefixes = defaultPrefixes }
   return [formElement.value]
 }
 
-export function getValues(form, { url, whitelist, prefixes = defaultPrefixes }) {
+export function getFormData(form, { url, whitelist, submitter, prefixes = defaultPrefixes }) {
   let pairs, body
+  const data = []
 
   if (url) {
     pairs = []
@@ -140,28 +141,63 @@ export function getValues(form, { url, whitelist, prefixes = defaultPrefixes }) 
           break
         case 'submit':
         case 'image':
-          if (form.__wookie_lastClickedSubmit != element) {
+          if (submitter !== element) {
             continue
           }
           break
       }
 
       if (whitelist && whitelist.indexOf(element.name) == -1) {
-        break
+        continue
       }
 
       for (let value of getFormElementValues(element, { prefixes })) {
-        if (url) {
-          if (window.File && value instanceof window.File) {
-            value = value.name
-          }
-
-          pairs.push(encodeURIComponent(element.name) + (value ? '=' + encodeURIComponent(value) : ''))
-        } else {
-          body.append(element.name, value)
-        }
+        data.push({
+          key: element.name,
+          value,
+        })
       }
 
+    }
+  }
+
+  if (form.getAdditionalData) {
+    try {
+      for (const { key, values } of form.getAdditionalData()) {
+        if (whitelist && whitelist.indexOf(key) == -1) {
+          continue
+        }
+
+        for (const value of values) {
+          if (window.Blob && value instanceof window.Blob) {
+            data.push({
+              key,
+              value,
+            })
+          } else {
+            data.push({
+              key,
+              value: value + '',
+            })
+          }
+        }
+      }
+    } catch (err) {
+      setTimeout(() => {
+        throw err
+      })
+    }
+  }
+
+  for (const { value, key } of data) {
+    if (url) {
+      if (window.File && value instanceof window.File) {
+        value = value.name
+      }
+
+      pairs.push(encodeURIComponent(key) + (value ? '=' + encodeURIComponent(value) : ''))
+    } else {
+      body.append(key, value)
     }
   }
 
