@@ -46,18 +46,18 @@ export function isSameArray(a, b) {
   return true
 }
 
-export function populateProps(node, { suffix = '', prefixes = defaultPrefixes, storage = {} }) {
+export function populateProps(node, { suffix = '', prefixes = defaultPrefixes, target = {} }) {
   for (const prefix of prefixes) {
     for (const attr of node.attributes) {
       const pi = attr.name.indexOf(prefix)
       const si = attr.name.indexOf(suffix)
       if (pi == 0 && si == attr.name.length - suffix.length) {
-        storage[attr.name.slice(pi + prefix.length, si)] = attr.value
+        target[attr.name.slice(pi + prefix.length, si)] = attr.value
       }
     }
   }
 
-  return storage
+  return target
 }
 
 export function getAttrList(attr, { prefixes = defaultPrefixes }) {
