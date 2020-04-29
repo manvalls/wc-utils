@@ -1,6 +1,6 @@
 {
   "name": "@vlrz/wc-utils",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Some common utilities for web components",
   "sideEffects": false,
   "main": "./dist/wcUtils.cjs.js",
