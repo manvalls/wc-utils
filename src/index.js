@@ -222,3 +222,14 @@ export function toQuery(context) {
 
   return attrs.join('&')
 }
+
+export function compose(...funcs) {
+  return (arg, ...rest) => {
+    let result = arg
+    for (const func of funcs) {
+      result = func(result, ...rest)
+    }
+
+    return result
+  }
+}
