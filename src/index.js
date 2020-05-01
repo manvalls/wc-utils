@@ -233,3 +233,30 @@ export function compose(...funcs) {
     return result
   }
 }
+
+export function withInit(BaseClass) {
+  const inited = new WeakSet()
+  return class extends BaseClass {
+    constructor() {
+      const self = super()
+
+      if (!inited.has(self)) {
+        inited.add(self)
+        super.init.call(self)
+      }
+
+      return self
+    }
+
+    connectedCallback() {
+      if (super.connectedCallback) {
+        super.connectedCallback()
+      }
+
+      if (!inited.has(this)) {
+        inited.add(this)
+        super.init.call(this)
+      }
+    }
+  }
+}
