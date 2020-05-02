@@ -72,25 +72,8 @@ export function getAttrList(attr, { prefixes = defaultPrefixes }) {
 
 export function getFormElementValues(formElement, { prefixes = defaultPrefixes }) {
 
-  if (typeof formElement.overrideInputValues == 'function') {
-    try {
-      const values = formElement.overrideInputValues()
-
-      if (!(
-        values &&
-          typeof values.length == 'number' &&
-          values.length >= 0 &&
-          values.length <= 4294967295
-      )) {
-        throw new Error('Expected overrideInputValues to return an array, got', values)
-      }
-
-      return values
-    } catch (err) {
-      setTimeout(() => {
-        throw err
-      }, 0)
-    }
+  if (typeof formElement.getCustomInputValues == 'function') {
+    return formElement.getCustomInputValues()
   }
 
   for (const prefix of prefixes) if (prefix) {
@@ -121,7 +104,6 @@ export function getFormElementValues(formElement, { prefixes = defaultPrefixes }
 
 export function getFormData(form, { url, whitelist, submitter, prefixes = defaultPrefixes }) {
   let pairs, body
-  const data = []
 
   if (url) {
     pairs = []
@@ -129,8 +111,18 @@ export function getFormData(form, { url, whitelist, submitter, prefixes = defaul
     body = new FormData()
   }
 
+  let elements = []
+  if (typeof form.getCustomInputs === 'function') {
+    elements = form.getCustomInputs()
+  }
+
   for (const element of form.elements) {
+    elements.push(element)
+  }
+
+  for (const element of elements) {
     if (element.hasAttribute('name')) {
+      const name = element.getAttribute('name')
 
       switch (element.type.toLowerCase()) {
         case 'radio':
@@ -147,57 +139,22 @@ export function getFormData(form, { url, whitelist, submitter, prefixes = defaul
           break
       }
 
-      if (whitelist && whitelist.indexOf(element.name) == -1) {
+      if (whitelist && whitelist.indexOf(name) == -1) {
         continue
       }
 
       for (let value of getFormElementValues(element, { prefixes })) {
-        data.push({
-          key: element.name,
-          value,
-        })
-      }
-
-    }
-  }
-
-  if (form.getAdditionalData) {
-    try {
-      for (const { key, values } of form.getAdditionalData()) {
-        if (whitelist && whitelist.indexOf(key) == -1) {
-          continue
-        }
-
-        for (const value of values) {
-          if (window.Blob && value instanceof window.Blob) {
-            data.push({
-              key,
-              value,
-            })
-          } else {
-            data.push({
-              key,
-              value: value + '',
-            })
+        if (url) {
+          if (window.File && value instanceof window.File) {
+            value = value.name
           }
+
+          pairs.push(encodeURIComponent(name) + (value ? '=' + encodeURIComponent(value) : ''))
+        } else {
+          body.append(name, value)
         }
       }
-    } catch (err) {
-      setTimeout(() => {
-        throw err
-      })
-    }
-  }
 
-  for (const { value, key } of data) {
-    if (url) {
-      if (window.File && value instanceof window.File) {
-        value = value.name
-      }
-
-      pairs.push(encodeURIComponent(key) + (value ? '=' + encodeURIComponent(value) : ''))
-    } else {
-      body.append(key, value)
     }
   }
 
