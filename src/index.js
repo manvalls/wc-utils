@@ -111,33 +111,35 @@ export function getFormData(form, { url, whitelist, submitter, prefixes = defaul
     body = new FormData()
   }
 
-  let elements = []
+  const elements = new Set()
   if (typeof form.getCustomInputs === 'function') {
-    elements = form.getCustomInputs()
+    for (const customInput of form.getCustomInputs()) {
+      elements.add(customInput)
+    }
   }
 
   for (const element of form.elements) {
-    elements.push(element)
+    switch (element.type.toLowerCase()) {
+      case 'radio':
+      case 'checkbox':
+        if (!element.checked) {
+          continue
+        }
+        break
+      case 'submit':
+      case 'image':
+        if (submitter !== element) {
+          continue
+        }
+        break
+    }
+
+    elements.add(element)
   }
 
   for (const element of elements) {
     if (element.hasAttribute('name')) {
       const name = element.getAttribute('name')
-
-      switch (element.type.toLowerCase()) {
-        case 'radio':
-        case 'checkbox':
-          if (!element.checked) {
-            continue
-          }
-          break
-        case 'submit':
-        case 'image':
-          if (submitter !== element) {
-            continue
-          }
-          break
-      }
 
       if (whitelist && whitelist.indexOf(name) == -1) {
         continue
