@@ -102,16 +102,9 @@ export function getFormElementValues(formElement, { prefixes = defaultPrefixes }
   return [formElement.value]
 }
 
-export function getFormData(form, { url, whitelist, submitter, prefixes = defaultPrefixes }) {
-  let pairs, body
-
-  if (url) {
-    pairs = []
-  } else {
-    body = new FormData()
-  }
-
+export function getFormElements(form, { submitter }) {
   const elements = new Set()
+
   if (typeof form.getCustomInputs === 'function') {
     for (const customInput of form.getCustomInputs()) {
       elements.add(customInput)
@@ -137,7 +130,19 @@ export function getFormData(form, { url, whitelist, submitter, prefixes = defaul
     elements.add(element)
   }
 
-  for (const element of elements) {
+  return elements
+}
+
+export function getFormData(form, { url, whitelist, submitter, prefixes = defaultPrefixes }) {
+  let pairs, body
+
+  if (url) {
+    pairs = []
+  } else {
+    body = new FormData()
+  }
+
+  for (const element of getFormElements(form, { submitter })) {
     if (element.hasAttribute('name')) {
       const name = element.getAttribute('name')
 
