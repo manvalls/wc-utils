@@ -9,7 +9,7 @@ export function isNotSelf(target) {
 
 const defaultPrefixes = ['data-w-', 'w-', '']
 
-export function getFirst(pairs, { prefixes = defaultPrefixes }) {
+export function getFirst(pairs, { prefixes = defaultPrefixes } = {}) {
   for (const [elem, attr] of pairs) {
     if (elem) {
       for (const prefix of prefixes) {
@@ -46,7 +46,7 @@ export function isSameArray(a, b) {
   return true
 }
 
-export function populateProps(node, { suffix = '', prefixes = defaultPrefixes, target = {} }) {
+export function populateProps(node, { suffix = '', prefixes = defaultPrefixes, target = {} } = {}) {
   for (const prefix of prefixes) {
     for (const attr of node.attributes) {
       const pi = attr.name.indexOf(prefix)
@@ -60,7 +60,7 @@ export function populateProps(node, { suffix = '', prefixes = defaultPrefixes, t
   return target
 }
 
-export function getAttrList(attr, { prefixes = defaultPrefixes }) {
+export function getAttrList(attr, { prefixes = defaultPrefixes } = {}) {
   const attrList = []
 
   for (const prefix of prefixes) {
@@ -70,7 +70,7 @@ export function getAttrList(attr, { prefixes = defaultPrefixes }) {
   return attrList
 }
 
-export function getFormElementValues(formElement, { prefixes = defaultPrefixes }) {
+export function getFormElementValues(formElement, { prefixes = defaultPrefixes } = {}) {
 
   if (typeof formElement.getCustomInputValues == 'function') {
     return formElement.getCustomInputValues()
@@ -102,7 +102,7 @@ export function getFormElementValues(formElement, { prefixes = defaultPrefixes }
   return [formElement.value]
 }
 
-export function getFormElements(form, { submitter }) {
+export function getFormElements(form, { submitter } = {}) {
   const elements = new Set()
 
   if (typeof form.getCustomInputs === 'function') {
@@ -133,7 +133,7 @@ export function getFormElements(form, { submitter }) {
   return elements
 }
 
-export function getFormData(form, { url, whitelist, submitter, prefixes = defaultPrefixes }) {
+export function getFormData(form, { url, whitelist, submitter, prefixes = defaultPrefixes } = {}) {
   let pairs, body
 
   if (url) {
